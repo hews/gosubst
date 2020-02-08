@@ -7,9 +7,9 @@ COMMIT := $(shell git rev-parse HEAD)
 TAG    := $(shell git tag --sort=-v:refname | head -n1)
 SPRIG  := $(shell go list -u -m all 2>/dev/null | grep Masterminds/sprig | awk '{ print $$2 }')
 
-LDFLAGS  = -X=main.versionBuild=$(COMMIT) \
-           -X=main.versionRelease=$(TAG) \
-		   -X=main.versionSprig=$(SPRIG)
+LDFLAGS  = -X=main.VersionBuild=$(COMMIT) \
+           -X=main.VersionRelease=$(TAG) \
+           -X=main.VersionSprig=$(SPRIG)
 
 PLATFORMS = darwin linux windows
 

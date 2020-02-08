@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"os"
 	"os/exec"
 	"strings"
@@ -44,20 +45,19 @@ type ProcessDetails struct {
 	Path          string
 }
 
-// Version information, injected at build-time.
-var versionBuild string
-var versionRelease string
-var versionSprig string
+// Allow us to use log.Fatalf w/o timestamps, and to test output.
+var elog = log.New(os.Stderr, "gosubst: ", 0)
+var olog = log.New(os.Stdout, "", 0)
 
 func main() {
 	// NOTE: the "flags" package is ugly, and this is simple.
 	for _, arg := range os.Args[1:] {
 		if arg == "-V" || arg == "--version" {
-			PrintVersion()
+			PrintVersion(olog)
 			os.Exit(0)
 		}
 		if arg == "-h" || arg == "--help" {
-			PrintHelp()
+			PrintHelp(olog)
 			os.Exit(0)
 		}
 	}
@@ -90,43 +90,6 @@ func main() {
 		}
 		Run(str)
 	}
-}
-
-// PrintVersion prints the version information.
-func PrintVersion() {
-	fmt.Printf(
-		"gosubst %s, build: %s\n\nUses:\n  - Sprig %s\n",
-		versionRelease,
-		versionBuild,
-		versionSprig,
-	)
-}
-
-// PrintHelp prints help information.
-func PrintHelp() {
-	fmt.Println(strings.TrimSpace(`
-Usage: gosubst [OPTION]
-
-Substitutes the values of environment variables.
-
-Options:
-  -h, --help                  display this help and exit
-  -V, --version               output version information and exit
-
-When gosubst is invoked standard input is copied to standard output,
-with references to environment variables of the form $VARIABLE or ${VARIABLE}
-being replaced with the corresponding values first (as in ` + "`envsubst`" + `), and
-then passed through the Go templating engine.
-
-For the Go template, the global context includes the environment as .Env,
-and information about the currently running process as .Proc. Also included in
-the template are the suite of Sprig <http://masterminds.github.io/sprig/>
-functions and a special ` + "`sh()`" + ` function that evals the given string with
-` + "`/bin/sh -c '...'`" + ` (you have been warned).
-
-For more information, email <p+gosubst@hews.co>, or visit the project page at
-<https://github.com/hews/gosubst>.
-	`))
 }
 
 // Environment gathers the environment variables for .Env.
