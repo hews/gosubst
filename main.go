@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -50,6 +51,9 @@ var elog = log.New(os.Stderr, "gosubst: ", 0)
 var olog = log.New(os.Stdout, "", 0)
 
 func main() {
+	var doExpand = true
+	var doTemplate = true
+
 	// NOTE: the "flags" package is ugly, and this is simple.
 	for _, arg := range os.Args[1:] {
 		if arg == "-V" || arg == "--version" {
@@ -59,6 +63,18 @@ func main() {
 		if arg == "-h" || arg == "--help" {
 			PrintHelp(olog)
 			os.Exit(0)
+		}
+		if arg == "-t" || arg == "--template-only" {
+			if !doTemplate {
+				elog.Fatalf("invalid options: must expand or template")
+			}
+			doExpand = false
+		}
+		if arg == "-e" || arg == "--expand-only" {
+			if !doExpand {
+				elog.Fatalf("invalid options: must expand or template")
+			}
+			doTemplate = false
 		}
 	}
 
@@ -75,7 +91,8 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		Run(string(bytes))
+		output := Template(string(bytes), doExpand, doTemplate)
+		fmt.Print(output)
 		os.Exit(0)
 	}
 
@@ -88,7 +105,8 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		Run(str)
+		output := Template(str, doExpand, doTemplate)
+		fmt.Print(output)
 	}
 }
 
@@ -135,32 +153,47 @@ func Sh(cmdstr string) string {
 	return string(out)
 }
 
-// Run actually runs the templating mechanisms over input, writing
-// output to STDOUT.
-func Run(input string) {
+// Template actually runs the templating mechanisms over input, returning
+// the result if no errors are encountered.
+func Template(input string, doExpand, doTemplate bool) string {
+	var buf bytes.Buffer
+	var str string
+
 	// Expand env vars in the input.
-	input = os.ExpandEnv(input)
+	if doExpand {
+		str = Expand(input, os.Getenv)
+	} else {
+		str = input
+	}
 
 	// Compile and then execute the input as a Go template, including the
 	// functions from Sprig (and sh()).
-	tmpl := template.Must(template.New("gosubst.main").
-		Funcs(sprig.TxtFuncMap()).
-		Funcs(template.FuncMap(map[string]interface{}{
-			"sh": Sh,
-		})).
-		Parse(input))
-	err := tmpl.Execute(os.Stdout, &GlobalContext{
-		Env:  Environment(),
-		Proc: Process(),
-	})
-
-	if err != nil {
-		panic(err)
+	if doTemplate {
+		tmpl, err := template.New("<stdin>").
+			Funcs(sprig.TxtFuncMap()).
+			Funcs(template.FuncMap(map[string]interface{}{
+				"sh": Sh,
+			})).
+			Parse(str)
+		if err != nil {
+			elog.Fatalf("input is invalid: %s\n", err)
+		}
+		err = tmpl.Execute(&buf, &GlobalContext{
+			Env:  Environment(),
+			Proc: Process(),
+		})
+		if err != nil {
+			elog.Fatalf("input is invalid: %s", err)
+		}
+		str = buf.String()
 	}
+
+	return str
 }
 
 func must(str string, err error) string {
 	if err != nil {
+		// There was a fundamental issue with querying the process/syscalls.
 		panic(err)
 	}
 	return str
