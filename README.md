@@ -1,13 +1,12 @@
 # `gosubst`
 
-Here's the deal: I want to just do some simple command-line templating of configuration files that are used as input to a lot of cloud service tools. YAML files, confs, .envs, lots of container definitions, orchestration manifests, etc. `envsubst` does not get the job done, and I want something that just sits on the command line and is sturdy.
+Here's the deal: I just wanted to do some simple command-line templating of configuration files that are used as input to a lot of cloud service tools. YAML files, confs, .envs, lots of container definitions, orchestration manifests, etc. `envsubst` does not get the job done, and I want something that just sits on the command line, is sturdy, and allows me to share configuration publicly (or even internally) without exposing secrets.
 
 That is `gosubst`.
 
 ## Installation
 
-<!-- 
-Figure this all out:
+<!-- TODO: figure this all out:
 
 Easy:
 
@@ -19,7 +18,7 @@ Little harder:
 -->
 
 ```
-$ export VERSION=v0.1.0; export OS=linux;
+$ export VERSION=v0.2.0; export OS=linux; # ... or "darwin" (MacOS), or "windows" ...
 $ curl -LJ \
   https://github.com/hews/gosubst/releases/download/${VERSION}/gosubst.${OS} \
   -o gosubst
@@ -29,8 +28,7 @@ $ mv gosubst /usr/local/bin
 
 See [releases](https://github.com/hews/gosubst/releases) for what options will work.
 
-<!--
-_Dreams do come true..._
+<!-- TODO: _dreams do come true..._
 
 Little easier (MacOS):
 
@@ -42,14 +40,21 @@ $ brew update && brew install gosubst
 ## Use
 
 ```
-$ echo 'This is a ${TEST}!' | TEST=test gosubst
+$ echo '{{ printf "This is a %s!" "${TEST}" }}' | TEST=test gosubst
+#> This is a test!
 ```
 
-This is meant to be minimal and dead simple, so it accepts _NO*_ options. It reads from STDIN and writes to STDOUT, and is meant to replace `envsubst`, which has only one option `-v`/`--variables` to list the variables in some text, but that doesn't really track with what we're doing, so that's that.
+This is meant to be a minimal and dead simple replacement for `envsubst`. Though it does not implement a superset of `envsubst` exactly, it is used for the same purpose, and any file being used with `envsubst` can be very easily changed to work with **`gosubst`**.
 
-And there you go! [See the `/examples` directory for examples.](examples)
+Like `envsubst` it reads from STDIN and writes to STDOUT (both with pipes, and in interactive mode), and expands environmental variables in the form `${ENVVAR}`. Unlike envsubst, there is no way to filter or print the variables that are used, and variables in the form `$ENVVAR` are ignored.
 
-> __*_ – it does accept `-h`/`--help` and `-V`/`--version`, but let's ignore that for now._
+After variable expansion, however, comes the fun part! The input is treated like a [Go template][gotemplates], and the context for the calling process is injected into it. This context includes environmental variables, shell variables, and details about the process.
+
+A full suite of functions is available to use in templating via [Sprig][sprig]! Finally, there is an available function `sh("...")` that hands off to `/bin/sh -c '...'`, so that we can nest shell commands into the template.
+
+And there you go! **[See the `/examples` directory for examples.](examples)**
+
+<!-- TODO: move to documentation.
 
 ### Ok, but really, how do I use it?
 
@@ -61,6 +66,8 @@ In addition to doing vanilla Go template rendering, the things to know are:
 -  Becuase typing `"value: {{ index .Env "SECRET_VAR" }}"` is a big headache, we actually run `envsubst` on the text _BEFORE_ we template it. This means we can use `"value: ${SECRET_VAR}"` just like always. Be careful though when mixing this with Go templating: remember we parse these first!
 -  The template loads [Sprig functions][sprig] for fun and profit. See `--version` for information on the version of Sprig used.
 -  An extra, very important but possibly world-destroying, function is also added called `sh()`, that in essence spawns a sub-process that runs the given string with `/bin/sh` (assuming a *nix system).
+
+-->
 
 ## Some Q&A, in which I lob myself softballs and knock 'em outta the park...
 
