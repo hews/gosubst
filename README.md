@@ -6,16 +6,13 @@ That is `gosubst`.
 
 ## Installation
 
-<!-- TODO: figure this all out:
-
 Easy:
 
 ```
 $ go install github.com/hews/gosubst
 ```
 
-Little harder:
--->
+If you don't have a working Go environment, it's only a little harder:
 
 ```
 $ export VERSION=v0.2.0; export OS=linux; # ... or "darwin" (MacOS), or "windows" ...
@@ -26,22 +23,24 @@ $ chmod +x gosubst
 $ mv gosubst /usr/local/bin
 ```
 
-See [releases](https://github.com/hews/gosubst/releases) for what options will work.
+> See [releases](https://github.com/hews/gosubst/releases) for what options will work.
 
-<!-- TODO: _dreams do come true..._
-
-Little easier (MacOS):
+However, if you use **MacOS**, it's as easy as can be:
 
 ```
-$ brew update && brew install gosubst
+$ brew tap hews/tap && brew update
+# > ==> Tapping hews/tap
+# > ...
+$ brew install gosubst
+# > ==> Installing gosubst from hews/tap
+# > ...
 ```
--->
 
 ## Use
 
 ```
 $ echo '{{ printf "This is a %s!" "${TEST}" }}' | TEST=test gosubst
-#> This is a test!
+# > This is a test!
 ```
 
 This is meant to be a minimal and dead simple replacement for `envsubst`. Though it does not implement a superset of `envsubst` exactly, it is used for the same purpose, and any file being used with `envsubst` can be very easily changed to work with **`gosubst`**.
