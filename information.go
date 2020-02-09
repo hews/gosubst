@@ -30,13 +30,13 @@ being replaced with the corresponding values first (as in ` + "`envsubst`" + `),
 then passed through the Go templating engine.
 
 For the Go template, the global context includes the environment as .Env,
-and information about the currently running process as .Proc. Also included in
-the template are the suite of Sprig <http://masterminds.github.io/sprig/>
+and information about the currently running process as .Proc. Also included
+in the template are the suite of Sprig <http://masterminds.github.io/sprig/>
 functions and a special ` + "`sh()`" + ` function that evals the given string with
-` + "`/bin/sh -c '...'`" + ` (you have been warned).
+` + "`sh -c '...'`" + ` (use at your own peril!).
 
-For more information, email <p+gosubst@hews.co>, or visit the project page at
-<https://github.com/hews/gosubst>.
+For more information, email <p+gosubst@hews.co>, or visit the project page
+at <https://github.com/hews/gosubst>.
 `
 
 // PrintVersion prints the version information.
