@@ -9,26 +9,23 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"strings"
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
 )
 
 // GlobalContext represents the values that will be available at the
-// top level (ie "$.") in the template. This is where .Env, .Proc and
-// .Debug come from.
+// top level (ie "$.") in the template. This is where .Proc and .Debug
+// come from.
 type GlobalContext struct {
-	Env   map[string]string
 	Proc  ProcessDetails
 	Debug bool
 }
 
 // ProcessDetails are just a grab bag of things we may want to know and
 // it'd be nice to have a simple interface for. Most are just what the
-// Go package "os" offer up simply, but User, Shell, Term, Path are
-// also pulled from the environment as local shell vars, and would be
-// repeated in .Env.
+// Go package "os" offer up simply, but User, Shell, Term, Path and PWD
+// are also pulled from the environment as local shell vars.
 type ProcessDetails struct {
 	PID           int
 	PPID          int
@@ -45,6 +42,7 @@ type ProcessDetails struct {
 	Shell         string
 	Term          string
 	Path          string
+	PWD           string
 }
 
 // Allow us to use log.Fatalf w/o timestamps, and to test output.
@@ -123,18 +121,6 @@ func main() {
 	}
 }
 
-// Environment gathers the environment variables for .Env.
-func Environment() map[string]string {
-	rawenv := os.Environ()
-	envmap := make(map[string]string, len(rawenv))
-
-	for _, envvar := range rawenv {
-		kv := strings.SplitN(envvar, "=", 2)
-		envmap[kv[0]] = kv[1]
-	}
-	return envmap
-}
-
 // Process gathers the basic .Proc values.
 func Process() ProcessDetails {
 	return ProcessDetails{
@@ -153,6 +139,7 @@ func Process() ProcessDetails {
 		Shell:         os.Getenv("SHELL"),
 		Term:          os.Getenv("TERM"),
 		Path:          os.Getenv("PATH"),
+		PWD:           os.Getenv("PWD"),
 	}
 }
 
@@ -190,7 +177,6 @@ func Template(input string, doExpand, doTemplate, debug bool) (string, error) {
 			return "", err
 		}
 		err = tmpl.Execute(&buf, &GlobalContext{
-			Env:   Environment(),
 			Proc:  Process(),
 			Debug: debug,
 		})

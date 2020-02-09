@@ -30,8 +30,8 @@ with references to environment variables of the form ${VARIABLE}
 being replaced with the corresponding values first (as in ` + "`envsubst`" + `), and
 then passed through the Go templating engine.
 
-For the Go template, the global context includes the environment as .Env,
-information about the currently running process as .Proc, and the command
+For the Go template, the global context some environmental variables and
+information about the currently running process as .Proc and the command
 line boolean option --debug as .Debug. Also included in the template are
 the suite of Sprig <http://masterminds.github.io/sprig/> functions and a
 special ` + "`sh()`" + ` function that evals the given string with` + "`sh -c '...'`" + `.

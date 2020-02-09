@@ -4,34 +4,10 @@ import (
 	"fmt"
 	"os"
 	"reflect"
-	"sort"
-	"strings"
 	"testing"
 
 	gosubst "github.com/hews/gosubst"
 )
-
-func TestEnvironment(t *testing.T) {
-	environ := os.Environ()
-	env := gosubst.Environment()
-
-	if len(env) != len(environ) {
-		t.Errorf("len(Environment()) == %q; expected %q", len(env), len(environ))
-	}
-
-	names := make([]string, 0, len(env))
-	for name := range env {
-		names = append(names, name)
-	}
-	sort.Strings(names)
-	sort.Strings(environ)
-
-	for i, name := range names {
-		if !strings.Contains(environ[i], name) || !strings.Contains(environ[i], env[name]) {
-			t.Errorf("Environment() contains %q => %q, but actual is %q", name, env[name], environ[i])
-		}
-	}
-}
 
 func TestProcess(t *testing.T) {
 	proc := gosubst.Process()

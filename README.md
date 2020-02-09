@@ -47,7 +47,7 @@ This is meant to be a minimal and dead simple replacement for `envsubst`. Though
 
 Like `envsubst` it reads from STDIN and writes to STDOUT (both with pipes, and in interactive mode), and expands environmental variables in the form `${ENVVAR}`. Unlike envsubst, there is no way to filter or print the variables that are used, and variables in the form `$ENVVAR` are ignored.
 
-After variable expansion, however, comes the fun part! The input is treated like a [Go template][gotemplates], and the context for the calling process is injected into it. This context includes environmental variables, shell variables, and details about the process.
+After variable expansion, however, comes the fun part! The input is treated like a [Go template][gotemplates], and the context for the calling process is injected into it. This context includes some shell variables, details about the process, and debugging flags.
 
 A full suite of functions is available to use in templating via [Sprig][sprig]! Finally, there is an available function `sh("...")` that hands off to `sh -c '...'`, so that we can nest shell commands into the template.
 
@@ -61,8 +61,8 @@ Yeah so, it's [`envsubst`][envsubst] but uses [Go templates][gotemplates]. Read 
 
 In addition to doing vanilla Go template rendering, the things to know are:
 
--  The top-level context indcludes two values: `Proc` and `Env`; `Proc` contains details about the process and shell that initiated the command, and `Env` contains a copy of the [shell's environmental variables][envvars] as a string map.
--  Becuase typing `"value: {{ index .Env "SECRET_VAR" }}"` is a big headache, we actually run `envsubst` on the text _BEFORE_ we template it. This means we can use `"value: ${SECRET_VAR}"` just like always. Be careful though when mixing this with Go templating: remember we parse these first!
+-  The top-level context indcludes two values: `Proc` and `Debug`; `Proc` contains details about the process and shell that initiated the command, and `Debug` identifies if the --debug command line option was passed.
+-  We actually expand env vars in the text _BEFORE_ we template it. This means we can use `"value: ${SECRET_VAR}"` just like always. Be careful though when mixing this with Go templating: remember we expand these first!
 -  The template loads [Sprig functions][sprig] for fun and profit. See `--version` for information on the version of Sprig used.
 -  An extra, very important but possibly world-destroying, function is also added called `sh()`, that in essence spawns a sub-process that runs the given string with `/bin/sh` (assuming a *nix system).
 
