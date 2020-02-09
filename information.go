@@ -19,7 +19,7 @@ Usage: gosubst [OPTION]
 Substitutes the values of environment variables.
 
 Options:
-	-e, --expand-only           skip templating (good for debugging expansion)
+  -e, --expand-only           skip templating (good for debugging expansion)
   -t, --template-only         skip env variable expansion
   -h, --help                  display this help and exit
   -V, --version               output version information and exit
