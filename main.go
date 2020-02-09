@@ -91,7 +91,10 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		output := Template(string(bytes), doExpand, doTemplate)
+		output, err := Template(string(bytes), doExpand, doTemplate)
+		if err != nil {
+			elog.Fatalf("input is invalid: %s\n", err)
+		}
 		fmt.Print(output)
 		os.Exit(0)
 	}
@@ -105,7 +108,10 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		output := Template(str, doExpand, doTemplate)
+		output, err := Template(str, doExpand, doTemplate)
+		if err != nil {
+			elog.Fatalf("input is invalid: %s\n", err)
+		}
 		fmt.Print(output)
 	}
 }
@@ -153,7 +159,7 @@ func Sh(cmdstr string) (string, error) {
 
 // Template actually runs the templating mechanisms over input, returning
 // the result if no errors are encountered.
-func Template(input string, doExpand, doTemplate bool) string {
+func Template(input string, doExpand, doTemplate bool) (string, error) {
 	var buf bytes.Buffer
 	var str string
 
@@ -174,24 +180,23 @@ func Template(input string, doExpand, doTemplate bool) string {
 			})).
 			Parse(str)
 		if err != nil {
-			elog.Fatalf("input is invalid: %s\n", err)
+			return "", err
 		}
 		err = tmpl.Execute(&buf, &GlobalContext{
 			Env:  Environment(),
 			Proc: Process(),
 		})
 		if err != nil {
-			elog.Fatalf("input is invalid: %s", err)
+			return "", err
 		}
 		str = buf.String()
 	}
 
-	return str
+	return str, nil
 }
 
 func must(str string, err error) string {
 	if err != nil {
-		// There was a fundamental issue with querying the process/syscalls.
 		panic(err)
 	}
 	return str

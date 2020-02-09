@@ -75,7 +75,7 @@ var shErrorTests = []struct {
 	{"xBBB/argh", "", fmt.Errorf("exit status 127")},
 	// Are NOT errors.
 	{"", "", nil},
-	{"echo 'IM NOT AN ERR' >2", "", nil},
+	{"echo 'IM NOT AN ERR' >&2", "", nil},
 	{"echo 'IM NOT AN ERR' | tee /dev/stderr", "IM NOT AN ERR\n", nil},
 }
 
