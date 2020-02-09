@@ -16,11 +16,12 @@ import (
 )
 
 // GlobalContext represents the values that will be available at the
-// top level (ie "$.") in the template. This is where .Env and .Proc
-// come from.
+// top level (ie "$.") in the template. This is where .Env, .Proc and
+// .Debug come from.
 type GlobalContext struct {
-	Env  map[string]string
-	Proc ProcessDetails
+	Env   map[string]string
+	Proc  ProcessDetails
+	Debug bool
 }
 
 // ProcessDetails are just a grab bag of things we may want to know and
@@ -51,8 +52,11 @@ var elog = log.New(os.Stderr, "gosubst: ", 0)
 var olog = log.New(os.Stdout, "", 0)
 
 func main() {
-	var doExpand = true
-	var doTemplate = true
+	var (
+		doExpand   = true
+		doTemplate = true
+		debug      = false
+	)
 
 	// NOTE: the "flags" package is ugly, and this is simple.
 	for _, arg := range os.Args[1:] {
@@ -76,6 +80,9 @@ func main() {
 			}
 			doTemplate = false
 		}
+		if arg == "--debug" {
+			debug = true
+		}
 	}
 
 	// Check the current mode of STDIN.
@@ -91,7 +98,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		output, err := Template(string(bytes), doExpand, doTemplate)
+		output, err := Template(string(bytes), doExpand, doTemplate, debug)
 		if err != nil {
 			elog.Fatalf("input is invalid: %s\n", err)
 		}
@@ -108,7 +115,7 @@ func main() {
 		if err != nil {
 			panic(err)
 		}
-		output, err := Template(str, doExpand, doTemplate)
+		output, err := Template(str, doExpand, doTemplate, debug)
 		if err != nil {
 			elog.Fatalf("input is invalid: %s\n", err)
 		}
@@ -159,7 +166,7 @@ func Sh(cmdstr string) (string, error) {
 
 // Template actually runs the templating mechanisms over input, returning
 // the result if no errors are encountered.
-func Template(input string, doExpand, doTemplate bool) (string, error) {
+func Template(input string, doExpand, doTemplate, debug bool) (string, error) {
 	var buf bytes.Buffer
 	var str string
 
@@ -183,8 +190,9 @@ func Template(input string, doExpand, doTemplate bool) (string, error) {
 			return "", err
 		}
 		err = tmpl.Execute(&buf, &GlobalContext{
-			Env:  Environment(),
-			Proc: Process(),
+			Env:   Environment(),
+			Proc:  Process(),
+			Debug: debug,
 		})
 		if err != nil {
 			return "", err

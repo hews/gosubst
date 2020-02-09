@@ -19,8 +19,9 @@ Usage: gosubst [OPTION]
 Substitutes the values of environment variables.
 
 Options:
-  -e, --expand-only           skip templating (good for debugging expansion)
-  -t, --template-only         skip env variable expansion
+  -e, --expand-only           skip the Go templating pass
+  -t, --template-only         skip env variable expansion pass
+      --debug                 set the template context .Debug val true
   -h, --help                  display this help and exit
   -V, --version               output version information and exit
 
@@ -30,10 +31,11 @@ being replaced with the corresponding values first (as in ` + "`envsubst`" + `),
 then passed through the Go templating engine.
 
 For the Go template, the global context includes the environment as .Env,
-and information about the currently running process as .Proc. Also included
-in the template are the suite of Sprig <http://masterminds.github.io/sprig/>
-functions and a special ` + "`sh()`" + ` function that evals the given string with
-` + "`sh -c '...'`" + ` (use at your own peril!).
+information about the currently running process as .Proc, and the command
+line boolean option --debug as .Debug. Also included in the template are
+the suite of Sprig <http://masterminds.github.io/sprig/> functions and a
+special ` + "`sh()`" + ` function that evals the given string with` + "`sh -c '...'`" + `.
+Use sh at your own peril!
 
 For more information, email <p+gosubst@hews.co>, or visit the project page
 at <https://github.com/hews/gosubst>.

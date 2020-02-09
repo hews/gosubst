@@ -12,12 +12,12 @@ import (
 )
 
 var templateTests = []struct {
-	file             string
-	expand, template bool
+	file                    string
+	expand, template, debug bool
 }{
-	{"manifest.yaml", true, true},
-	{"manifest.yaml", false, true},
-	{"manifest.yaml", true, false},
+	{"manifest.yaml", true, true, false},
+	{"manifest.yaml", false, true, false},
+	{"manifest.yaml", true, false, false},
 }
 
 func setEnvironment() {
@@ -31,7 +31,8 @@ func TestTemplate(t *testing.T) {
 	setEnvironment()
 
 	for _, test := range templateTests {
-		output, err := gosubst.Template(contents(test.file), test.expand, test.template)
+		output, err :=
+			gosubst.Template(contents(test.file), test.expand, test.template, test.debug)
 
 		if err != nil {
 			t.Errorf(
