@@ -144,13 +144,11 @@ func Process() ProcessDetails {
 }
 
 // Sh implements the `sh()` function used in the template to run
-// basic shell commands and inject their output back into the document.
-func Sh(cmdstr string) string {
-	out, err := exec.Command("/bin/sh", "-c", cmdstr).Output()
-	if err != nil {
-		panic(err)
-	}
-	return string(out)
+// basic shell commands and inject their STDOUT back into the document.
+// STDERR output is attached to the err, but then is promptly ignored.
+func Sh(cmdstr string) (string, error) {
+	out, err := exec.Command("sh", "-c", cmdstr).Output()
+	return string(out), err
 }
 
 // Template actually runs the templating mechanisms over input, returning

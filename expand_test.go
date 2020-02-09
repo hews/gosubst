@@ -3,7 +3,7 @@ package main_test
 import (
 	"testing"
 
-	. "github.com/hews/gosubst"
+	gosubst "github.com/hews/gosubst"
 )
 
 func testGetenv(s string) string {
@@ -62,11 +62,12 @@ var expandTests = []struct {
 	{"${", ""},
 	{"${}", ""},
 	{"start${+middle}${^end}$", "start$"},
+	{"start${+middle}$${^end}$", "start${^end}$"},
 }
 
 func TestExpand(t *testing.T) {
 	for _, test := range expandTests {
-		result := Expand(test.in, testGetenv)
+		result := gosubst.Expand(test.in, testGetenv)
 		if result != test.out {
 			t.Errorf("Expand(%q) == %q; expected %q", test.in, result, test.out)
 		}

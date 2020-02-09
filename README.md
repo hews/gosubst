@@ -50,7 +50,7 @@ Like `envsubst` it reads from STDIN and writes to STDOUT (both with pipes, and i
 
 After variable expansion, however, comes the fun part! The input is treated like a [Go template][gotemplates], and the context for the calling process is injected into it. This context includes environmental variables, shell variables, and details about the process.
 
-A full suite of functions is available to use in templating via [Sprig][sprig]! Finally, there is an available function `sh("...")` that hands off to `/bin/sh -c '...'`, so that we can nest shell commands into the template.
+A full suite of functions is available to use in templating via [Sprig][sprig]! Finally, there is an available function `sh("...")` that hands off to `sh -c '...'`, so that we can nest shell commands into the template.
 
 And there you go! **[See the `/examples` directory for examples.](examples)**
 
