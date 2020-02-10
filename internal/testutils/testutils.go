@@ -11,11 +11,15 @@ import (
 func ClearEnvironment(t *testing.T) func() {
 	t.Helper()
 
-	environ := os.Environ()
 	home := os.Getenv("HOME")
+	path := os.Getenv("PATH")
 
+	environ := os.Environ()
 	os.Clearenv()
-	os.Setenv("HOME", home) // Panics if this is lost.
+
+	// Panics if these are lost.
+	os.Setenv("HOME", home)
+	os.Setenv("PATH", path)
 
 	return func() {
 		for _, envvar := range environ {

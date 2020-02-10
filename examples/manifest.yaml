@@ -1,11 +1,37 @@
+{{/* Sanity checks are good! */}}
+{{/* NOTE: file references must be relative to the CWD, not the template
+     itself (since it's coming via STDIN w/o reference to file). */}}
+{{- requiredEnvs "APP_NAME" }}
+{{- requiredFiles "examples/include/fake-ssl.crt" "examples/include/fake-ssl.key" "examples/include/labels.txt" -}}
+
+{{/* While this is not the ideal way to handle this, the example is that
+     you can handle pulling in data from some outside source and then
+     convert it to Sprig lists or dicts. Ie, you can connect this to any
+     current command-line-based workflow with a little effort.
+
+     If these values exist in the cloud, or some key vault, and there is
+     significant latency in pulling them, it can be nice to wrap them in
+     a "not .Debug" statement as below, so that testing can skip the slow
+     parts if you choose. */}}
+{{- $labels := dict "app" "${APP_NAME}" }}
+{{- if not .Debug }}
+  {{- $labelsList := sh `cat examples/include/labels.txt | tr '\n' ' '` | trim | splitList " " | compact }}
+  {{- range $label := $labelsList }}
+    {{- $pair := splitList "=" $label  }}
+    {{- $_ := set $labels (index $pair 0) (index $pair 1) }}
+  {{- end }}
+{{- end -}}
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ${APP_NAME}-deployment
   labels:
-    app: ${APP_NAME}
+{{- range $key, $value := $labels }}
+    {{ $key }}: {{ $value }}
+{{- end }}
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: ${APP_NAME}
@@ -18,4 +44,15 @@ spec:
         - name: nginx
           image: nginx:{{ default "latest" "${NGINX_VERSION}" }}
           ports:
-            - containerPort: 80
+          ports:
+            - port: 443
+              protocol: TCP
+          volumeMounts:
+            - name: nginx-config
+              mountPath: /etc/nginx
+  volumes:
+    - name: nginx-config
+      secret:
+        ssl.crt: {{ sh "cat examples/include/fake-ssl.crt" | b64enc }}
+        ssl.key: {{ sh "cat examples/include/fake-ssl.key" | b64enc }}
+        nginx.conf: {{ sh "cat examples/include/nginx.conf" | b64enc }}
