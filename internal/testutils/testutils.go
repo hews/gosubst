@@ -6,7 +6,8 @@ import (
 	"testing"
 )
 
-// ClearEnvironment ...
+// ClearEnvironment clears out the environment for testing, returning a
+// function you can run on defer to restore the environment.
 func ClearEnvironment(t *testing.T) func() {
 	t.Helper()
 

@@ -15,7 +15,7 @@ $ go install github.com/hews/gosubst
 If you don't have a working Go environment, it's only a little harder:
 
 ```
-$ export VERSION=v0.2.0; export OS=linux; # ... or "darwin" (MacOS), or "windows" ...
+$ export VERSION=v0.4.0; export OS=linux; # ... or "darwin" (MacOS), or "windows" ...
 $ curl -LJ \
   https://github.com/hews/gosubst/releases/download/${VERSION}/gosubst.${OS} \
   -o gosubst
@@ -49,9 +49,9 @@ Like `envsubst` it reads from STDIN and writes to STDOUT (both with pipes, and i
 
 After variable expansion, however, comes the fun part! The input is treated like a [Go template][gotemplates], and the context for the calling process is injected into it. This context includes some shell variables, details about the process, and debugging flags.
 
-A full suite of functions is available to use in templating via [Sprig][sprig]! Finally, there is an available function `sh("...")` that hands off to `sh -c '...'`, so that we can nest shell commands into the template.
+A full suite of functions is available to use in templating via [Sprig][sprig]! There is also an available function `sh("...")` that hands off to `sh -c '...'`, so that we can nest shell commands into the template (and a few more utility functions on top of that).
 
-And there you go! **[See the `/examples` directory for examples.](examples)**
+**[See the `/examples` directory for examples.](examples)**
 
 <!-- TODO: move to documentation.
 
