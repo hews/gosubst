@@ -8,7 +8,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"os/exec"
 	"text/template"
 
 	"github.com/Masterminds/sprig/v3"
@@ -143,14 +142,6 @@ func Process() ProcessDetails {
 	}
 }
 
-// Sh implements the `sh()` function used in the template to run
-// basic shell commands and inject their STDOUT back into the document.
-// STDERR output is attached to the err, but then is promptly ignored.
-func Sh(cmdstr string) (string, error) {
-	out, err := exec.Command("sh", "-c", cmdstr).Output()
-	return string(out), err
-}
-
 // Template actually runs the templating mechanisms over input, returning
 // the result if no errors are encountered.
 func Template(input string, doExpand, doTemplate, debug bool) (string, error) {
@@ -169,9 +160,7 @@ func Template(input string, doExpand, doTemplate, debug bool) (string, error) {
 	if doTemplate {
 		tmpl, err := template.New("<stdin>").
 			Funcs(sprig.TxtFuncMap()).
-			Funcs(template.FuncMap(map[string]interface{}{
-				"sh": Sh,
-			})).
+			Funcs(FuncMap()).
 			Parse(str)
 		if err != nil {
 			return "", err

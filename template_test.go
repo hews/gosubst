@@ -9,6 +9,7 @@ import (
 	"gotest.tools/v3/golden"
 
 	gosubst "github.com/hews/gosubst"
+	"github.com/hews/gosubst/internal/testutils"
 )
 
 var templateTests = []struct {
@@ -20,15 +21,11 @@ var templateTests = []struct {
 	{"manifest.yaml", true, false, false},
 }
 
-func setEnvironment() {
-	home := os.Getenv("HOME") // Panics if this is lost.
-	os.Clearenv()
-	os.Setenv("HOME", home)
-	os.Setenv("APP_NAME", "nginx")
-}
-
 func TestTemplate(t *testing.T) {
-	setEnvironment()
+	resetEnvirnonment := testutils.ClearEnvironment(t)
+	defer resetEnvirnonment()
+
+	os.Setenv("APP_NAME", "nginx")
 
 	for _, test := range templateTests {
 		output, err :=
@@ -46,6 +43,7 @@ func TestTemplate(t *testing.T) {
 
 		golden.Assert(t, output, goldenName(test.file, test.expand, test.template))
 	}
+
 }
 
 func contents(filename string) string {
